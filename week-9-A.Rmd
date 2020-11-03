@@ -41,15 +41,52 @@ week_9 <- kenya %>%
 **Prompt:** In addition to the outcome variable and the treatment, we have 3 statistics for the communities in the sample --- poverty, distance and population density. See code comments above for details. Never hurts to do a little exploratory data analysis. Look at the data!
 
 * Make a scatter plot of `poverty` on the y-axis and `distance` in the x-axis. Include a `geom_smooth()` with `method` set to "lm" and `se` equal to FALSE. Write a sentence to answer these questions:
+```{r sc1}
+week_9 %>%
+  ggplot(aes(x = distance, y = poverty)) +
+  geom_point() + 
+  geom_smooth(formula = y ~ x, method = lm, se = FALSE) + 
+  labs(title = "Poverty and Distance at Kenya Polling Stations",
+       subtitle = 'Poorer communities are farther away from polling stations',
+       x = 'Distance (km)',
+       y = 'Poverty Measure',
+       caption = 'Data from Harris, Kaminda, and Van der Wind (2020)')
+  
+
+```
 
   + Does poverty cause distance? Or does distance cause poverty? Or both? Or neither?
+  
+  Neither, because although there seems to be a positive correlation between
+  poverty and distance, there's no causation.
+  
   + How accurate is the model beyond 90 kilometers?  
+  
+  Not that accurate, because there's only one data point >90 km.
+  
   + Eye-balling the chart, how different is the poverty rate between two polling stations whose distance differs by 50 kilometers?
+  
+  There seems to be a ~10% difference in poverty rate in polling stations 
+  whose distance differs by 50 km.
   
 * Create a linear model which relates poverty to distance. This is similar to the models we created last week which related age to party. See the discussion in Chapter 9 for advice.  Write down the math. 
   
+  $$ poverty_i = \beta_0 + \beta_1 distance_i + \epsilon_i $$
+  
 * Fit a `stan_glm()` model which relates poverty to distance. Print a summary. (Hint: In order to see the coefficient of `distance`, you will probably need to use the `digits` argument to `print()`.) Interpret the meaning of the two important parameters.  
 
+```{r sc1}
+fit_obj <- stan_glm(data = week_9,
+         poverty ~ distance,
+         family = gaussian(),
+         refresh = 0)
+
+print(fit_obj, digits = 3)
+```
+
+The intercept indicates the poverty proportion when the distance from the polling
+station is 0. The distance parameter tells us the coefficient of distance (i.e.
+for every increase in 1 km, there's a 0.002 increase in the poverty proportion).
 
 
 ## Scene 2
@@ -58,8 +95,22 @@ week_9 <- kenya %>%
 
 * Provide the math for this model.
 
+  $$ \textit{reg_chg}_i = \beta_1 x_{t,i} + \beta_2 x_{p,i} + \beta_3 x_{d,i} 
+  + \beta_4 x_{pd,i} + \epsilon $$
+
 * Estimate the model. Assign the fitted model to `fit_2`. Interpret the important parameters of the model.
 
+```{r sc2}
+fit_obj_2 <- stan_glm(data = week_9,
+         reg_chg ~ treatment + poverty + distance + pop_density,
+         refresh = 0)
+
+print(fit_obj_2, digits = 3)
+```
+
+Poverty and 
+
+Calculate confidence intervals for the difference between two communities, one with a poverty rate of 80% and one of 60%. Use posterior_predict to help you.
 
 
 
